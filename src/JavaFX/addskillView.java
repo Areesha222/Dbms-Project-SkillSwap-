@@ -4,7 +4,7 @@
  */
 package javafx;
 
-import dao.SkillDAO;
+import dao.skillDAO;
 import model.Skill;
 import model.User;
 import javafx.geometry.Insets;
@@ -16,7 +16,7 @@ import javafx.scene.layout.GridPane;
  */
 public class addskillView extends GridPane {
 
-    private SkillDAO skillDAO = new SkillDAO();
+    private skillDAO skillDAO = new skillDAO();
     private User user;
 
     public addskillView(User user) {
