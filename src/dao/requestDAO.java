@@ -4,20 +4,20 @@
  */
 package dao;
 
-import model.Request;
+import model.request;
 import java.sql.*;
 
 /**
  * DAO for Requests table
  */
-public class RequestDAO {
+public class requestDAO {
 
-    public boolean addRequest(Request r) {
+    public boolean addRequest(request r) {
         String sql = "INSERT INTO Requests(user_id, skill_name) VALUES(?,?)";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, r.getUserId());
-            ps.setString(2, r.getSkillName());
+            ps.setString(2, r.getskillName());
             int n = ps.executeUpdate();
             if (n > 0) {
                 ResultSet rs = ps.getGeneratedKeys();
