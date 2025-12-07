@@ -10,7 +10,7 @@ import java.sql.*;
 /**
  * Basic CRUD operations for Users
  */
-public class UserDAO {
+public class userDAO {
 
     public boolean addUser(User user) {
         String sql = "INSERT INTO Users(name, dept, password, role) VALUES(?,?,?,?)";

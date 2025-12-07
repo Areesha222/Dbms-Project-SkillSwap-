@@ -25,16 +25,16 @@ public class dashboardView extends Stage {
         TabPane tabs = new TabPane();
 
         // Each custom view is a Node (Pane/Control)
-        Tab t1 = new Tab("Add Skill", new AddSkillView(user));
+        Tab t1 = new Tab("Add Skill", new addskillView(user));
         t1.setClosable(false);
 
-        Tab t2 = new Tab("Request Skill", new RequestSkillView(user));
+        Tab t2 = new Tab("Request Skill", new requestskillView(user));
         t2.setClosable(false);
 
-        Tab t3 = new Tab("Matches", new MatchesView(user));
+        Tab t3 = new Tab("Matches", new matchesView(user));
         t3.setClosable(false);
 
-        Tab t4 = new Tab("Ratings", new RatingsView(user));
+        Tab t4 = new Tab("Ratings", new ratingsView(user));
         t4.setClosable(false);
 
         tabs.getTabs().addAll(t1, t2, t3, t4);
