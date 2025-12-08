@@ -15,7 +15,7 @@ public class skillDAO {
     public boolean addSkill(Skill skill) {
         String sql = "INSERT INTO Skills(user_id, skill_name, level) VALUES(?,?,?)";
         try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, skill.getUserId());
             ps.setString(2, skill.getSkillName());
             ps.setString(3, skill.getLevel());
