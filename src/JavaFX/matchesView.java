@@ -13,35 +13,46 @@ import javafx.scene.layout.VBox;
 import java.sql.ResultSet;
 
 /**
- * MatchesView - displays matches from Matches table
+ * Matches view. Loads matches using MatchDAO and displays in a ListView.
  */
 public class matchesView extends VBox {
 
-    private matchDAO matchDAO = new matchDAO();
-    private User user;
+    private final matchDAO matchDAO = new matchDAO();
+    private final User user;
+    private final ListView<String> list = new ListView<>();
 
     public matchesView(User user) {
         this.user = user;
-        setPadding(new Insets(10));
         setSpacing(10);
+        setPadding(new Insets(18));
+        getStyleClass().add("card");
+
+        Label title = new Label("Matches");
+        title.getStyleClass().add("section-title");
 
         Button btnLoad = new Button("Load Matches");
-        ListView<String> list = new ListView<>();
+        btnLoad.getStyleClass().add("button-primary");
 
-        btnLoad.setOnAction(e -> {
-            list.getItems().clear();
-            try {
-                ResultSet rs = matchDAO.getAllMatches();
-                while (rs != null && rs.next()) {
-                    String row = "Match#" + rs.getInt("match_id")
-                            + " | skill_id:" + rs.getInt("skill_id")
-                            + " | req_id:" + rs.getInt("req_id")
-                            + " | status:" + rs.getString("status");
-                    list.getItems().add(row);
-                }
-            } catch (Exception ex) { ex.printStackTrace(); }
-        });
+        btnLoad.setOnAction(e -> reload());
 
-        getChildren().addAll(btnLoad, list);
+        getChildren().addAll(title, btnLoad, list);
+    }
+
+    public void reload() {
+        list.getItems().clear();
+        try {
+            ResultSet rs = matchDAO.getAllMatches();
+            while (rs != null && rs.next()) {
+                // You can customize display to show skill names/owner by joining tables in DAO
+                String row = "Match#" + rs.getInt("match_id")
+                        + " | skill_id:" + rs.getInt("skill_id")
+                        + " | req_id:" + rs.getInt("req_id")
+                        + " | status:" + rs.getString("status");
+                list.getItems().add(row);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            list.getItems().add("Error loading matches");
+        }
     }
 }

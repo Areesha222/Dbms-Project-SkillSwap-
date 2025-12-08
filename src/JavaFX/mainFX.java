@@ -5,21 +5,24 @@
 package javafx;
 
 import javafx.application.Application;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- * Main JavaFX launcher. Run this to start the app.
+ * Entry point for the modernized JavaFX UI.
+ * Loads CSS and shows Login screen.
  */
 public class mainFX extends Application {
-
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Show login window
+        // Show Login Stage (LoginView is a Stage)
         loginView login = new loginView();
-        login.show(); // login extends Stage (see LoginView)
+        // Load CSS into the login scene inside LoginView (LoginView loads it itself).
+        login.show();
     }
 
     public static void main(String[] args) {
         launch(args);
     }
 }
+

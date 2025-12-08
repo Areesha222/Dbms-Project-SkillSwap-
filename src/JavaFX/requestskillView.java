@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package javafx;
 
 import dao.requestDAO;
@@ -13,30 +12,38 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 
 /**
- * RequestSkillView - UI to add a skill request
+ * Request Skill pane for dashboard. Adds a request via RequestDAO.
  */
 public class requestskillView extends GridPane {
 
-    private requestDAO requestDAO = new requestDAO();
-    private User user;
+    private final requestDAO requestDAO = new requestDAO();
+    private final User user;
 
     public requestskillView(User user) {
         this.user = user;
-        setHgap(10); setVgap(10); setPadding(new Insets(15));
+        setHgap(10);
+        setVgap(10);
+        setPadding(new Insets(18));
+        getStyleClass().add("card");
+
+        Label title = new Label("Request a Skill");
+        title.getStyleClass().add("section-title");
 
         TextField tfReq = new TextField();
-        Button btnAdd = new Button("Add Request");
+        tfReq.setPromptText("e.g., Java, Calculus");
+        tfReq.getStyleClass().add("text-field");
 
-        add(new Label("Skill you want:"), 0, 0);
-        add(tfReq, 1, 0);
-        add(btnAdd, 1, 1);
+        Button btnReq = new Button("Add Request");
+        btnReq.getStyleClass().add("button-primary");
 
-        btnAdd.setOnAction(e -> {
+        add(title, 0, 0, 2, 1);
+        add(new Label("Skill you want:"), 0, 1);
+        add(tfReq, 1, 1);
+        add(btnReq, 1, 2);
+
+        btnReq.setOnAction(e -> {
             String skill = tfReq.getText().trim();
-            if (skill.isEmpty()) {
-                showAlert("Enter a skill to request");
-                return;
-            }
+            if (skill.isEmpty()) { showAlert("Enter a skill"); return; }
             request r = new request(user.getUserId(), skill);
             boolean ok = requestDAO.addRequest(r);
             showAlert(ok ? "Request added" : "Error adding request");
@@ -44,8 +51,8 @@ public class requestskillView extends GridPane {
         });
     }
 
-    private void showAlert(String msg) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION, msg);
+    private void showAlert(String text) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION, text);
         a.setHeaderText(null);
         a.showAndWait();
     }
