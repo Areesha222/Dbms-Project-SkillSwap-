@@ -43,39 +43,54 @@ public class matchDAO {
      * showing skill name, requester username, and status
      */
     public List<MatchDTO> getMatchesForUser(int userId) {
-        List<MatchDTO> matches = new ArrayList<>();
-        String q = """
-            SELECT m.match_id, s.skill_name, u.username AS requester_name, m.status
-            FROM Matches m
-            JOIN Skills s ON m.skill_id = s.skill_id
-            JOIN Requests r ON m.req_id = r.req_id
-            JOIN Users u ON r.user_id = u.user_id
-            WHERE s.user_id = ? OR r.user_id = ?
-            ORDER BY m.match_id
-        """;
+    List<MatchDTO> matches = new ArrayList<>();
 
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(q)) {
+    String q = """
+        SELECT m.match_id, s.skill_name, u.name AS requester_name, m.status
+        FROM Matches m
+        JOIN Skills s ON m.skill_id = s.skill_id
+        JOIN Requests r ON m.req_id = r.req_id
+        JOIN Users u ON r.user_id = u.user_id
+        WHERE s.user_id = ? OR r.user_id = ?
+        ORDER BY m.match_id
+    """;
 
-            ps.setInt(1, userId);
-            ps.setInt(2, userId);
+    System.out.println("Fetching matches for userId = " + userId);
 
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                MatchDTO match = new MatchDTO();
-                match.setMatchId(rs.getInt("match_id"));
-                match.setSkillName(rs.getString("skill_name"));
-                match.setRequesterName(rs.getString("requester_name")); // use username
-                match.setStatus(rs.getString("status"));
-                matches.add(match);
-            }
+    try (Connection con = DBConnection.getConnection();
+         PreparedStatement ps = con.prepareStatement(q)) {
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        ps.setInt(1, userId);
+        ps.setInt(2, userId);
+
+        ResultSet rs = ps.executeQuery();
+
+        int count = 0;
+        while (rs.next()) {
+            MatchDTO match = new MatchDTO();
+            match.setMatchId(rs.getInt("match_id"));
+            match.setSkillName(rs.getString("skill_name"));
+            match.setRequesterName(rs.getString("requester_name"));
+            match.setStatus(rs.getString("status"));
+            matches.add(match);
+            count++;
+            System.out.println("Match found: ID=" + match.getMatchId() +
+                               ", Skill=" + match.getSkillName() +
+                               ", Requester=" + match.getRequesterName() +
+                               ", Status=" + match.getStatus());
         }
 
-        return matches;
+        if (count == 0) {
+            System.out.println("No matches found for userId = " + userId);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+
+    return matches;
+}
+
 
     public boolean updateMatchStatus(int matchId, String status) {
         String q = "UPDATE Matches SET status = ? WHERE match_id = ?";
