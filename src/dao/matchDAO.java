@@ -5,61 +5,92 @@
 package dao;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import model.MatchDTO;
 
-/**
- * Match generation and retrieval.
- * generateMatches: simple join on skill_name = skill_name
- * getAllMatches: fetches all rows from Matches
- */
 public class matchDAO {
 
-    // creates matches for any skill/request pair where names match
     public void generateMatches() {
-        String q = "SELECT s.skill_id, r.req_id FROM Skills s JOIN Requests r ON s.skill_name = r.skill_name";
+        String q = """
+            INSERT INTO Matches(skill_id, req_id, status)
+            SELECT s.skill_id, r.req_id, 'Pending'
+            FROM Skills s
+            JOIN Requests r 
+              ON s.skill_name = r.skill_name
+            WHERE s.user_id <> r.user_id
+              AND NOT EXISTS (
+                  SELECT 1 
+                  FROM Matches m
+                  WHERE m.skill_id = s.skill_id 
+                    AND m.req_id = r.req_id
+              )
+        """;
+
         try (Connection con = DBConnection.getConnection();
-             Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery(q)) {
+             PreparedStatement ps = con.prepareStatement(q)) {
 
-            String insert = "INSERT INTO Matches(skill_id, req_id, status) VALUES(?,?,?)";
-            PreparedStatement ps = con.prepareStatement(insert);
-            while (rs.next()) {
-                int skillId = rs.getInt(1);
-                int reqId = rs.getInt(2);
+            int rowsInserted = ps.executeUpdate();
+            System.out.println("Matches generated: " + rowsInserted);
 
-                // To avoid duplicates, you might check first. For simplicity we insert.
-                ps.setInt(1, skillId);
-                ps.setInt(2, reqId);
-                ps.setString(3, "pending");
-                try {
-                    ps.executeUpdate();
-                } catch (SQLException ignored) {
-                    // ignore duplicate or FK errors for demo
-                }
-            }
-            ps.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public ResultSet getAllMatches() {
-        try {
-            Connection con = DBConnection.getConnection();
-            Statement st = con.createStatement();
-            return st.executeQuery("SELECT * FROM Matches");
-        } catch (Exception e) { e.printStackTrace(); }
-        return null;
-    }
+    /**
+     * Returns matches relevant to a specific user
+     * showing skill name, requester username, and status
+     */
+    public List<MatchDTO> getMatchesForUser(int userId) {
+        List<MatchDTO> matches = new ArrayList<>();
+        String q = """
+            SELECT m.match_id, s.skill_name, u.username AS requester_name, m.status
+            FROM Matches m
+            JOIN Skills s ON m.skill_id = s.skill_id
+            JOIN Requests r ON m.req_id = r.req_id
+            JOIN Users u ON r.user_id = u.user_id
+            WHERE s.user_id = ? OR r.user_id = ?
+            ORDER BY m.match_id
+        """;
 
-    // example helper to update match status
-    public boolean updateMatchStatus(int matchId, String status) {
-        String q = "UPDATE Matches SET status = ? WHERE match_id = ?";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(q)) {
+
+            ps.setInt(1, userId);
+            ps.setInt(2, userId);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                MatchDTO match = new MatchDTO();
+                match.setMatchId(rs.getInt("match_id"));
+                match.setSkillName(rs.getString("skill_name"));
+                match.setRequesterName(rs.getString("requester_name")); // use username
+                match.setStatus(rs.getString("status"));
+                matches.add(match);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return matches;
+    }
+
+    public boolean updateMatchStatus(int matchId, String status) {
+        String q = "UPDATE Matches SET status = ? WHERE match_id = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(q)) {
+
             ps.setString(1, status);
             ps.setInt(2, matchId);
+
             return ps.executeUpdate() > 0;
-        } catch (Exception e) { e.printStackTrace(); }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 }
